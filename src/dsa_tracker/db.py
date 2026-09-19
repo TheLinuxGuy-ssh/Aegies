@@ -2,8 +2,18 @@ import sqlite3
 
 SCHEMA_SQL = """
     CREATE TABLE IF NOT EXISTS problems(
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
+        tags TEXT,
+        box INTEGER NOT NULL,
+        next_review TEXT NOT NULL
+    )
+    CREATE TABLE IF NOT EXISTS reviews(
         id INTEGAR PRIMARY KEY,
-        title TEXT NOT NULL
+        problem_id INTEGAR NOT NULL,
+        reviewed_at TEXT NOT NULL,
+        result TEXT NOT NULL
     )
 """
 
