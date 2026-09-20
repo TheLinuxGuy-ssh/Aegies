@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import json
 
 def next_box(current_box: int, result: int) -> int:
     if result == "correct":
@@ -25,3 +26,7 @@ def next_review_date(box: int) -> date:
             duration = 30
 
     return date.today() + timedelta(days=duration)
+
+def write_json_file(path, data):
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)

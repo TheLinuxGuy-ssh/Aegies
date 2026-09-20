@@ -1,8 +1,8 @@
 import click
 from datetime import date
-from .db import Database, SCHEMA_SQL, get_db_path
+from .db import Database, SCHEMA_SQL, get_db_path, stream_problems, stream_reviews
 from .models import Problem
-from .scheduler import next_box, next_review_date
+from .scheduler import next_box, next_review_date, write_json_file
 from .exceptions import ProblemNotFoundError, InvalidReviewError 
 
 @click.group()
@@ -108,6 +108,16 @@ def stats():
         else:
             rate = (correct[0] / total[0]) * 100
             click.echo(f"The current success rate is: {rate}% [{correct[0]}/{total[0]}]")
+
+@cli.command()
+@click.option("--out", default="export.json", help="Output file path")
+def export(out):
+    with Database(str(get_db_path())) as cur:
+        cur.executescript(SCHEMA_SQL)
+        problems = list(stream_problems(cur)) 
+        reviews = list(stream_reviews(cur)) 
+    write_json_file(out, [{"problems": problems,"reviews": reviews}])
+    click.echo(f"Exported {len(problems)} problems to {out}")
 
 
 if __name__ == "__main__":

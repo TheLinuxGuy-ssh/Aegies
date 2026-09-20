@@ -40,3 +40,25 @@ class Database:
 
         self.conn.close()
         return False
+
+def stream_problems(cur):
+    cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems")
+    for row in cur:
+        yield {
+            "id": row[0],
+            "title": row[1],
+            "difficulty": row[2],
+            "tags": row[3],
+            "box": row[4],
+            "next_review": row[5]
+        }
+
+def stream_reviews(cur):
+    cur.execute("SELECT id, problem_id, reviewed_at, reviewed_at, result FROM reviews")
+    for row in cur:
+        yield {
+            "id": row[0],
+            "problem_id": row[1],
+            "reviewed_at": row[2],
+            "result": row[3],
+        }
