@@ -1,3 +1,6 @@
+<img width="1000" height="350" alt="banner" src="https://github.com/user-attachments/assets/0656e70f-09ec-4b45-8203-5a4a06e1b0ef" />
+
+
 # Aegies — Spaced-Repetition DSA Problem Tracker
 
 A command-line tool for tracking Data Structures & Algorithms practice problems using a Leitner-system spaced-repetition schedule. Add problems as you solve them, review them on the schedule the tool gives you, and it tells you what's due today.
