@@ -1,9 +1,9 @@
 import click
-from db import Database, SCHEMA_SQL
 from datetime import date
-from models import Problem
-from scheduler import next_box, next_review_date
-from exceptions import ProblemNotFoundError, InvalidReviewError 
+from .db import Database, SCHEMA_SQL, get_db_path
+from .models import Problem
+from .scheduler import next_box, next_review_date
+from .exceptions import ProblemNotFoundError, InvalidReviewError 
 
 @click.group()
 def cli():
@@ -14,26 +14,36 @@ def cli():
 @click.option("--diff", type=click.Choice(["Easy", "Medium", "Hard"]), default="Medium", help="Easy/Medium/Hard")
 def add(title, diff):
     review_date=next_review_date(1)
-    with Database("tracker.db") as cur:
-        cur.execute(SCHEMA_SQL)
+    with Database(str(get_db_path())) as cur:
+        cur.executescript(SCHEMA_SQL)
         cur.execute(
             "INSERT into problems (title, difficulty, tags, box, next_review) VALUES (?, ?, ?, ?, ?)",
             (title, diff, "", 1, review_date.isoformat())
         )
     click.echo(f"Added: {title} ({diff})")
-@cli.command()
-def due():
+@cli.command(name="list")
+@click.option("--due", "-d", is_flag=True, help="Show Only Problems due Today")
+def list_dsa(due):
     today = date.today().isoformat()
-    with Database("tracker.db") as cur:
-        cur.execute(SCHEMA_SQL)
-        cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems WHERE next_review <= ?",
-            (today,),
-        )
+    with Database(str(get_db_path())) as cur:
+        cur.executescript(SCHEMA_SQL)
+
+        if due:
+            cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems WHERE next_review <= ?",
+                (today,),
+            )
+        else:
+            cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems")
+            
         rows = cur.fetchall()
 
+
+
     if not rows:
-        click.echo("Nothing Due Today!")
-        return
+        if due:
+            click.echo("No Reviews Done!")
+        else:
+            click.echo("No Problems Found!")
     else:
         for row in rows: 
             click.echo(f"[{row[0]}] {row[1]} ({row[2]}) — box {row[4]}, due {row[5]}")
@@ -43,8 +53,8 @@ def due():
 @click.option("--result", type=click.Choice(["correct", "wrong"]), required=True)
 def review(problem_id, result):
     try:
-        with Database("tracker.db") as cur:
-            cur.execute(SCHEMA_SQL)
+        with Database(str(get_db_path())) as cur:
+            cur.executescript(SCHEMA_SQL)
             cur.execute("SELECT box FROM problems WHERE id = ?", (problem_id,))
             row=cur.fetchone()
 
@@ -57,6 +67,9 @@ def review(problem_id, result):
 
             cur.execute("UPDATE problems SET box = ?, next_review = ? WHERE id = ?",
                 (new_box, new_date, problem_id)
+            )
+            cur.execute("INSERT into reviews (problem_id, reviewed_at, result) VALUES(?, ?, ?)",
+                (problem_id, date.today().isoformat(), result,)
             )
     except ProblemNotFoundError as e:
         raise click.ClickException(str(e))

@@ -1,4 +1,5 @@
 import sqlite3
+from pathlib import Path
 
 SCHEMA_SQL = """
     CREATE TABLE IF NOT EXISTS problems(
@@ -8,14 +9,20 @@ SCHEMA_SQL = """
         tags TEXT,
         box INTEGER NOT NULL,
         next_review TEXT NOT NULL
-    )
+    );
+
     CREATE TABLE IF NOT EXISTS reviews(
-        id INTEGAR PRIMARY KEY,
-        problem_id INTEGAR NOT NULL,
+        id INTEGER PRIMARY KEY,
+        problem_id INTEGER NOT NULL,
         reviewed_at TEXT NOT NULL,
         result TEXT NOT NULL
-    )
+    );
 """
+
+def get_db_path() -> Path:
+    config_dir = Path.home() / ".aegies"
+    config_dir.mkdir(exist_ok=True)
+    return config_dir / "tracker.db"
 
 class Database:
     def __init__(self, path):

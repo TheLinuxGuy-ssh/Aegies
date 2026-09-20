@@ -1,0 +1,2 @@
+[console_scripts]
+aegies = dsa_tracker.cli:cli
