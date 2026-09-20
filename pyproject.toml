@@ -5,14 +5,43 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "Aegies"
 version = "0.1.0"
-description = "Your tiny DSA tracker"
+description = "Spaced-repetition DSA problem tracker using Leitner system"
+readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.14"
 dependencies = [
     "click",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Education",
+    "Topic :: Utilities",
+]
+keywords = ["dsa", "spaced-repetition", "leitner", "cli", "algorithms", "data-structures"]
 
 [project.scripts]
 aegies = "dsa_tracker.cli:cli"
 
 [project.optional-dependencies]
 dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/<your-username>/<your-repo>"
+Repository = "https://github.com/<your-username>/<your-repo>"
+Issues = "https://github.com/<your-username>/<your-repo>/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["dsa_tracker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"

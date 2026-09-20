@@ -9,6 +9,8 @@ from .exceptions import ProblemNotFoundError, InvalidReviewError
 def cli():
     pass
 
+# ADD
+
 @cli.command()
 @click.argument("title")
 @click.option("--diff", type=click.Choice(["Easy", "Medium", "Hard"]), default="Medium", help="Easy/Medium/Hard")
@@ -21,32 +23,45 @@ def add(title, diff):
             (title, diff, "", 1, review_date.isoformat())
         )
     click.echo(f"Added: {title} ({diff})")
+
+# LIST
+
 @cli.command(name="list")
-@click.option("--due", "-d", is_flag=True, help="Show Only Problems due Today")
-def list_dsa(due):
+@click.argument("table")
+def list_dsa(table):
     today = date.today().isoformat()
+    choice = table.lower()
     with Database(str(get_db_path())) as cur:
         cur.executescript(SCHEMA_SQL)
 
-        if due:
-            cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems WHERE next_review <= ?",
-                (today,),
-            )
-        else:
-            cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems")
-            
+        match choice:
+            case "p":
+                cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems")
+            case "r":
+                cur.execute("SELECT id, problem_id, reviewed_at, result FROM reviews")
+            case "d":
+                cur.execute("SELECT id, title, difficulty, tags, box, next_review FROM problems WHERE next_review <= ?",
+                    (today,),
+                )
+            case _:
+                click.echo(f"Invalid Option `{choice}`")
+                return
+
         rows = cur.fetchall()
 
-
-
     if not rows:
-        if due:
-            click.echo("No Reviews Done!")
-        else:
-            click.echo("No Problems Found!")
+            click.echo("No Data Found!")
     else:
-        for row in rows: 
-            click.echo(f"[{row[0]}] {row[1]} ({row[2]}) — box {row[4]}, due {row[5]}")
+        match choice:
+            case "p" | "d":
+                for row in rows: 
+                    click.echo(f"[{row[0]}] {row[1]} ({row[2]}) — box {row[4]}, due {row[5]}")
+            case "r":
+                for row in rows:
+                    click.echo(f"[{row[0]}] Problem ID:{row[1]}, Reviewd At: {row[2]}, Result: {row[3]}")
+
+
+# REVIEW
 
 @cli.command()
 @click.argument("problem_id", type=int)
@@ -74,6 +89,26 @@ def review(problem_id, result):
     except ProblemNotFoundError as e:
         raise click.ClickException(str(e))
     click.echo(f"Problem {problem_id}: box {current_box} -> {new_box}, next review {new_date}")
+
+@cli.command()
+def stats():
+    with Database(str(get_db_path())) as cur:
+        cur.executescript(SCHEMA_SQL)
+
+        cur.execute("SELECT COUNT(*) FROM reviews")
+        total = cur.fetchone()
+
+        cur.execute("SELECT COUNT(*) FROM reviews WHERE result = ?",
+            ("correct",)
+        )
+        correct = cur.fetchone()
+
+        if total[0] == 0:
+            click.echo("No Reviews to evaluate from!")
+        else:
+            rate = (correct[0] / total[0]) * 100
+            click.echo(f"The current success rate is: {rate}% [{correct[0]}/{total[0]}]")
+
 
 if __name__ == "__main__":
     cli()

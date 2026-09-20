@@ -1,0 +1,109 @@
+# Aegies — Spaced-Repetition DSA Problem Tracker
+
+A command-line tool for tracking Data Structures & Algorithms practice problems using a Leitner-system spaced-repetition schedule. Add problems as you solve them, review them on the schedule the tool gives you, and it tells you what's due today.
+
+Built in pure Python with raw parameterized SQL (no ORM), `click` for the CLI, and SQLite for storage.
+
+## Requirements
+
+- Python 3.14 or later
+- `pip`
+
+## Setup
+
+Clone the repository and set up a virtual environment:
+
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\Activate.ps1
+```
+
+Install the project (this also creates the `aegies` command):
+
+```bash
+pip install -e .
+```
+
+Verify it worked:
+
+```bash
+aegies --help
+```
+
+## Usage
+
+### Add a problem
+
+```bash
+aegies add "Two Sum" --diff Easy
+```
+
+`--diff` accepts `Easy`, `Medium`, or `Hard` (defaults to `Medium`). New problems start at box 1 of the Leitner schedule, due for review the next day.
+
+### List problems
+
+```bash
+aegies list p     # all tracked problems
+aegies list d     # only problems due for review today or earlier
+aegies list r     # full review history log
+```
+
+### Review a problem
+
+```bash
+aegies review 1 --result correct
+aegies review 1 --result wrong
+```
+
+`--result` is required and must be `correct` or `wrong`. A correct review moves the problem up one Leitner box (longer gap before the next review, capped at box 5 / 30 days). A wrong review resets it to box 1 (next-day review).
+
+Leitner schedule used:
+
+| Box | Next review |
+|---|---|
+| 1 | +1 day |
+| 2 | +3 days |
+| 3 | +7 days |
+| 4 | +14 days |
+| 5 | +30 days |
+
+### View stats
+
+```bash
+aegies stats
+```
+
+Shows total reviews logged and your overall success rate.
+
+## Data storage
+
+All data is stored in a local SQLite database at `~/.aegies/tracker.db`, created automatically on first run. This is independent of your current working directory — the tool always reads and writes the same file no matter where you run `aegies` from.
+
+## Running tests
+
+Install the dev dependencies and run the test suite:
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+## Project structure
+
+```
+src/dsa_tracker/
+├── db.py          # SQLite connection (context manager), schema, raw SQL
+├── models.py       # Problem, ReviewLog dataclasses
+├── exceptions.py    # Custom exceptions
+├── scheduler.py     # Leitner spaced-repetition logic
+└── cli.py           # click-based command-line interface
+tests/
+├── test_db.py        # Database layer + transaction rollback tests
+└── test_scheduler.py # Scheduling logic tests
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
