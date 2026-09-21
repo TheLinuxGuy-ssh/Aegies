@@ -1,8 +1,157 @@
 Metadata-Version: 2.4
 Name: Aegies
 Version: 0.1.0
-Summary: Your tiny DSA tracker
+Summary: Spaced-repetition DSA problem tracker using Leitner system
+License: MIT License
+        
+        Copyright (c) 2026
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+Project-URL: Homepage, https://github.com/<your-username>/<your-repo>
+Project-URL: Repository, https://github.com/<your-username>/<your-repo>
+Project-URL: Issues, https://github.com/<your-username>/<your-repo>/issues
+Keywords: dsa,spaced-repetition,leitner,cli,algorithms,data-structures
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Education
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Topic :: Education
+Classifier: Topic :: Utilities
 Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: click
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
+Dynamic: license-file
+
+<img width="1000" height="350" alt="banner" src="https://github.com/user-attachments/assets/0656e70f-09ec-4b45-8203-5a4a06e1b0ef" />
+
+
+# Aegies — Spaced-Repetition DSA Problem Tracker
+
+A command-line tool for tracking Data Structures & Algorithms practice problems using a Leitner-system spaced-repetition schedule. Add problems as you solve them, review them on the schedule the tool gives you, and it tells you what's due today.
+
+Built in pure Python with raw parameterized SQL (no ORM), `click` for the CLI, and SQLite for storage.
+
+## Requirements
+
+- Python 3.14 or later
+- `pip`
+
+## Setup
+
+Clone the repository and set up a virtual environment:
+
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\Activate.ps1
+```
+
+Install the project (this also creates the `aegies` command):
+
+```bash
+pip install -e .
+```
+
+Verify it worked:
+
+```bash
+aegies --help
+```
+
+## Usage
+
+### Add a problem
+
+```bash
+aegies add "Two Sum" --diff Easy
+```
+
+`--diff` accepts `Easy`, `Medium`, or `Hard` (defaults to `Medium`). New problems start at box 1 of the Leitner schedule, due for review the next day.
+
+### List problems
+
+```bash
+aegies list p     # all tracked problems
+aegies list d     # only problems due for review today or earlier
+aegies list r     # full review history log
+```
+
+### Review a problem
+
+```bash
+aegies review 1 --result correct
+aegies review 1 --result wrong
+```
+
+`--result` is required and must be `correct` or `wrong`. A correct review moves the problem up one Leitner box (longer gap before the next review, capped at box 5 / 30 days). A wrong review resets it to box 1 (next-day review).
+
+Leitner schedule used:
+
+| Box | Next review |
+|---|---|
+| 1 | +1 day |
+| 2 | +3 days |
+| 3 | +7 days |
+| 4 | +14 days |
+| 5 | +30 days |
+
+### View stats
+
+```bash
+aegies stats
+```
+
+Shows total reviews logged and your overall success rate.
+
+## Data storage
+
+All data is stored in a local SQLite database at `~/.aegies/tracker.db`, created automatically on first run. This is independent of your current working directory — the tool always reads and writes the same file no matter where you run `aegies` from.
+
+## Running tests
+
+Install the dev dependencies and run the test suite:
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+## Project structure
+
+```
+src/dsa_tracker/
+├── db.py          # SQLite connection (context manager), schema, raw SQL
+├── models.py       # Problem, ReviewLog dataclasses
+├── exceptions.py    # Custom exceptions
+├── scheduler.py     # Leitner spaced-repetition logic
+└── cli.py           # click-based command-line interface
+tests/
+├── test_db.py        # Database layer + transaction rollback tests
+└── test_scheduler.py # Scheduling logic tests
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

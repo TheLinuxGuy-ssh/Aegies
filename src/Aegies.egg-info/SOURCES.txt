@@ -1,3 +1,5 @@
+LICENSE
+README.md
 pyproject.toml
 src/Aegies.egg-info/PKG-INFO
 src/Aegies.egg-info/SOURCES.txt
