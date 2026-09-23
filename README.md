@@ -17,8 +17,8 @@ Built in pure Python with raw parameterized SQL (no ORM), `click` for the CLI, a
 Clone the repository and set up a virtual environment:
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/thelinuxguy-ssh/aegies.git
+cd aegies
 python -m venv venv
 source venv/bin/activate      # Windows: venv\Scripts\Activate.ps1
 ```
